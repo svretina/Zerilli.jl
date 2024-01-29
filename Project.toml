@@ -3,6 +3,12 @@ uuid = "db8ccc58-0e15-4dd5-adae-f73a1ee57a06"
 authors = ["Stamatis Vretinaris"]
 version = "1.0.0-DEV"
 
+[deps]
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+GridFunctions = "28d702cb-9102-4da8-a82a-5023545b1c0c"
+HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+LoopVectorization = "bdcacae8-1622-11e9-2a5c-532679323890"
+
 [compat]
 julia = "1.10"
 
