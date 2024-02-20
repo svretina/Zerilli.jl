@@ -5,7 +5,9 @@ using ..Integrator
 using ..ODE
 using GridFunctions
 
-function run(ncells::Integer, tf::Real, cfl::Real,
+export zerilli
+
+function zerilli(ncells::Integer, tf::Real, cfl::Real,
     boundary_type::Symbol=:radiative, folder="", overwrite=true, save_every=1)
 
     @assert boundary_type === :radiative || boundary_type === :reflective
