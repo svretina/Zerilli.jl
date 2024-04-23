@@ -4,7 +4,7 @@ using HDF5
 using LoopVectorization
 
 const proj_path = pkgdir(Integrator)
-const output_path = string(proj_path, "/output")
+const output_path = string(proj_path, "/output/")
 
 function get_iter_str(i, N)
     i = string(i)
@@ -53,13 +53,13 @@ end
     return nothing
 end
 
-function solve(rhs, statevector, params, t, grid, M, save_every, folder, overwrite)
-    tnpoints = t.ncells + 1
-    istr = get_iter_str(0, tnpoints)
-    base_dir = base_path(folder)
-    sims_dir = sims_path(folder)
+function solve(rhs, statevector, params)
+    nt = params.t.ncells + 1
+    istr = get_iter_str(0, nt)
+    base_dir = base_path(params.folder)
+    sims_dir = sims_path(params.folder)
 
-    base_str = string(sims_dir, "output_M=", M, "_L=", Int64(grid.domain[2]), "_nc=$(grid.ncells)_ti=")
+    base_str = string(sims_dir, "output_M=", params.M, "_L=", Int64(params.grid.domain[2]), "_nc=$(params.grid.ncells)_ti=")
     dataset = string(base_str, istr, ".h5")
 
     if !isdir(sims_dir)
@@ -67,9 +67,10 @@ function solve(rhs, statevector, params, t, grid, M, save_every, folder, overwri
         mkdir(sims_dir)
     end
 
-    if overwrite == true && isfile(dataset)
+    if isfile(dataset)
         rm(dataset)
     end
+
     print("Writing initial data at: ", dataset)
     h5write(dataset, "Phi", statevector[:, 1])
     h5write(dataset, "Pi", statevector[:, 2])
@@ -83,22 +84,23 @@ function solve(rhs, statevector, params, t, grid, M, save_every, folder, overwri
     reg4 = similar(statevector)
     println("✅")
 
-    println("saving every=", save_every)
-    nt = t.ncells + 1
+    println("saving every=", params.save_every)
+
     dt = params.dt
     indices = CartesianIndices(statevector)
-    write_metadata(base_dir, params, grid, M, save_every, overwrite, dataset)
-
+    write_metadata(base_dir, params, dataset)
+    RK4(rhs, dt, reg2, reg2, reg3, reg4, params, 0.0, indices)
+    @time RK4(rhs, dt, reg2, reg2, reg3, reg4, params, 0.0, indices)
     for (i, ti) in enumerate(params.ti)
         if ti == 0.0
             continue
         end
         println("Iteration = ", i, "/", nt)
         @time RK4(rhs, dt, statevector, reg2, reg3, reg4, params, ti, indices)
-        if i % save_every == 0
-            istr = get_iter_str(i, tnpoints)
+        if i % params.save_every == 0
+            istr = get_iter_str(i, nt)
             dataset = string(base_str, istr, ".h5")
-            @time h5open(dataset, "w") do file
+            h5open(dataset, "w") do file
                 write(file, "Phi", statevector[:, 1])
                 write(file, "Pi", statevector[:, 2])
                 write(file, "Psi", statevector[:, 3])
@@ -108,26 +110,22 @@ function solve(rhs, statevector, params, t, grid, M, save_every, folder, overwri
     return nothing
 end
 
-function write_metadata(md_path, params, grid, M, save_every, overwrite, dataset)
-    metadata_filename = string(md_path, "/metadata.md")
-    data = "## Grid
-domain:       [$(grid.domain[1]), $(grid.domain[2])]
-ncells:       $(grid.ncells)
-spacing:      $(params.h)
+function write_metadata(md_path, params, simdir)
+    metadata_filename = string(md_path, "/metadata.yaml")
+    data = "Grid:
+    domain:       [$(params.grid.domain[1]), $(params.grid.domain[2])]
+    ncells:       $(params.grid.ncells)
+    dx:           $(params.h)
 
-## Time
-CFL:          $(params.dt/params.h)
-domain:       [0.0, $(params.ti[end])]
-ncells:       $(length(params.ti)-1)
-dt:           $(params.dt)
+Time:
+    CFL:          $(params.dt/params.h)
+    domain:       [0.0, $(params.ti[end])]
+    ncells:       $(length(params.ti)-1)
+    dt:           $(params.dt)
 
-## Black Hole
-mass:         $M
-
-## Output
-output path:  $dataset
-save every:   $save_every
-overwrite:    $overwrite
+Output:
+    output path:   $simdir
+    save every:    $(params.save_every)
 \n
 "
     println(data)

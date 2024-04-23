@@ -1,12 +1,18 @@
 module ODE
 
+using ..InitialData
+
 @inline function rhs!(du::AbstractArray{<:Real}, U::AbstractArray{<:Real}, params, t::Real)
     h = params.h
     N = params.N
+    l = params.l
+    M = params.M
+    rstar = params.rcoord
     boundary_type = params.bc
     @fastmath @inbounds begin
         h2 = 2h
         N1 = N - 1
+        Φ = @view U[:, 1]
         Π = @view U[:, 2]
         Ψ = @view U[:, 3]
 
@@ -71,7 +77,9 @@ module ODE
                            $boundary_type")
                 end
             else
-                dtΠ[i] = drΨ
+                ## you need to provide the transformation from rstar to r
+                ## to get the correct potential
+                dtΠ[i] = drΨ + InitialData.Vpot(l, rstar[i], M) * Φ[i]
                 dtΨ[i] = drΠ
             end
         end

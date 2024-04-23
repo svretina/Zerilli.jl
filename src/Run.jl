@@ -7,8 +7,16 @@ using GridFunctions
 
 export zerilli
 
-function zerilli(ncells::Integer, tf::Real, cfl::Real,
-    boundary_type::Symbol=:radiative, folder="", overwrite=true, save_every=1)
+
+function rstar(r, M)
+    return r + 2M * log(abs(r - 2M))
+end
+
+# you need to provide the transformations
+function r(rstar, M) end
+
+function zerilli(ncells::Integer, tf::Real, cfl::Real;
+    boundary_type::Symbol=:radiative, folder="", save_every=1)
 
     @assert boundary_type === :radiative || boundary_type === :reflective
     M = 1.0
@@ -27,9 +35,12 @@ function zerilli(ncells::Integer, tf::Real, cfl::Real,
     Π = InitialData.dtGaussian1D.(0, coords(grid), σ, r0)
     Ψ = InitialData.drGaussian1D.(0, coords(grid), σ, r0)
 
-    params = (h=spacing(grid), N=N, bc=boundary_type, ti=coords(t), dt=spacing(t))
+    l = 0.0
+    params = (h=spacing(grid), N=N, bc=boundary_type, t=t, ti=coords(t),
+        dt=spacing(t), save_every=save_every, M=M, grid=grid,
+        folder=folder, cfl=cfl, rcoord=coords(grid), l=l)
     statevector = hcat(Φ, Π, Ψ)
-    Integrator.solve(ODE.rhs!, statevector, params, t, grid, M, save_every, folder, overwrite)
+    Integrator.solve(ODE.rhs!, statevector, params)
     return nothing
 end
 
