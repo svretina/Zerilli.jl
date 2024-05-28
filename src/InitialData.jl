@@ -1,6 +1,15 @@
 module InitialData
 
 using ForwardDiff
+using LambertW
+
+function rstar(r::T, M::T) where {T}
+    return r + 2M * log(abs(r / (2M) - one(T)))
+end
+
+function r(rstar::T, M::T) where {T}
+    return 2(M + M * lambertw(exp(-one(T) + rstar / (2M))))
+end
 
 @inline function Gaussian1D(t::Real, r::Real, σ::Real, r0::Real)
     return exp(-(r - r0 + t)^2 / σ^2)
@@ -15,7 +24,6 @@ end
 end
 
 
-
 #creating general functions
 @inline function Lamb(l::T, r::T, M::T) where {T}
     return (l - one(T)) * (l + 2one(T)) + 6M / r
@@ -23,8 +31,8 @@ end
 @inline function f(r::T, M::T) where {T}
     return one(T) - 2M / r
 end
-@inline function mul(l::Real)
-    return (l - 1) * (l - 2)
+@inline function mul(l::T) where {T}
+    return (l - one(T)) * (l - 2one(T))
 end
 
 #defining the function
@@ -121,6 +129,7 @@ end
 end
 
 # Potential for the function
+# THIS IS EVALUATED at r and not rstar
 @inline function Vpot(l::Real, r::Real, M::Real)
     return f(r, M) / (Lamb(l, r, M)^2) * (mul(l)^2 * ((mul(l) + 2) / r^2 + 6 * M / r^3) + 36 * M^2 / r^4 * (mul(l) + 2 * M / r))
 end

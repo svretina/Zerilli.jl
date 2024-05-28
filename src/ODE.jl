@@ -77,9 +77,8 @@ using ..InitialData
                            $boundary_type")
                 end
             else
-                ## you need to provide the transformation from rstar to r
-                ## to get the correct potential
-                dtΠ[i] = drΨ + InitialData.Vpot(l, rstar[i], M) * Φ[i]
+                ri = InitialData.r(rstar[i], M) # transform rstar to r for potential
+                dtΠ[i] = drΨ + InitialData.Vpot(l, ri, M) * Φ[i]
                 dtΨ[i] = drΠ
             end
         end
