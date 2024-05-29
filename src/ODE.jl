@@ -78,6 +78,7 @@ using ..InitialData
                 end
             else
                 ri = InitialData.r(rstar[i], M) # transform rstar to r for potential
+                @assert ri > 2M
                 dtΠ[i] = drΨ + InitialData.Vpot(l, ri, M) * Φ[i]
                 dtΨ[i] = drΠ
             end
