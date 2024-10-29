@@ -77,9 +77,10 @@ using ..InitialData
                            $boundary_type")
                 end
             else
-                ri = InitialData.r(rstar[i], M) # transform rstar to r for potential
-                @assert ri > 2M
-                dtΠ[i] = drΨ + InitialData.Vpot(l, ri, M) * Φ[i]
+                # ri = InitialData.r(rstar[i], M) # transform rstar to r for potential
+                # @assert ri > 2M
+                # dtΠ[i] = drΨ + InitialData.Vpot(l, rstar[i], M) * Φ[i]
+                dtΠ[i] = drΨ + InitialData.poschl_teller(l, rstar[i]) * Φ[i]
                 dtΨ[i] = drΠ
             end
         end

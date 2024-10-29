@@ -89,13 +89,13 @@ function solve(rhs, statevector, params)
     dt = params.dt
     indices = CartesianIndices(statevector)
     write_metadata(base_dir, params, dataset)
-    RK4(rhs, dt, reg2, reg2, reg3, reg4, params, 0.0, indices)
-    @time RK4(rhs, dt, reg2, reg2, reg3, reg4, params, 0.0, indices)
+
     for (i, ti) in enumerate(params.ti)
-        if ti == 0.0
+        i -= 1
+        if i == 0
             continue
         end
-        println("Iteration = ", i, "/", nt)
+        println("Iteration = ", i, "/", nt - 1)
         @time RK4(rhs, dt, statevector, reg2, reg3, reg4, params, ti, indices)
         if i % params.save_every == 0
             istr = get_iter_str(i, nt)

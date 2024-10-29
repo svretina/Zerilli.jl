@@ -26,7 +26,7 @@ end
 
 #creating general functions
 @inline function Lamb(l::T, r::T, M::T) where {T}
-    return (l - one(T)) * (l + 2one(T)) + 6M / r
+    return (l - one(T)) * (l - 2one(T)) - 6M / r
 end
 @inline function f(r::T, M::T) where {T}
     return one(T) - 2M / r
@@ -132,6 +132,11 @@ end
 # THIS IS EVALUATED at r and not rstar
 @inline function Vpot(l::Real, r::Real, M::Real)
     return f(r, M) / (Lamb(l, r, M)^2) * (mul(l)^2 * ((mul(l) + 2) / r^2 + 6 * M / r^3) + 36 * M^2 / r^4 * (mul(l) + 2 * M / r))
+end
+
+@inline function poschl_teller(l::Real, r::Real)
+    # return -(l * (l + 1) / 2) * sech(r)^2
+    return -sech(r)^2
 end
 
 end #end of module
