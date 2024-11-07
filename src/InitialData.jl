@@ -23,7 +23,6 @@ end
     return ForwardDiff.derivative(r1 -> Gaussian1D(t, r1, σ, r0), r)
 end
 
-
 #creating general functions
 @inline function Lamb(l::T, r::T, M::T) where {T}
     return (l - one(T)) * (l - 2one(T)) - 6M / r
@@ -84,20 +83,22 @@ end
     end
 end
 
-
 #here i define the gauge invariant quantities
 @inline function khat(l::Real, t::Real, r::Real, M::Real, P::Real, L::Real)
-    return K(t, r, M, P, L) + l * (l + 1) / 2 * G(t, r, M, P, L) - (2 / r) * h1(t, r, M, P, L) + r * +r * drG(t, r, M, P, L)
+    return K(t, r, M, P, L) + l * (l + 1) / 2 * G(t, r, M, P, L) -
+           (2 / r) * h1(t, r, M, P, L) + r * +r * drG(t, r, M, P, L)
 end
 
 @inline function fhatrr(t::Real, r::Real, M::Real, P::Real, L::Real)
-    return H2(t, r, M, P, L) - 2 * drh1(t, r, M, P, L) + 4 * drG(t, r, M, P, L) + r^2 * (drdrG(t, r, M, P, L) - Christ(["t", "r", "r"], r, M) * dtG(t, r, M, P, L) - Christ(["r", "r", "r"], r, M) * drG(t, r, M, P, L))
+    return H2(t, r, M, P, L) - 2 * drh1(t, r, M, P, L) + 4 * drG(t, r, M, P, L) +
+           r^2 *
+           (drdrG(t, r, M, P, L) - Christ(["t", "r", "r"], r, M) * dtG(t, r, M, P, L) -
+            Christ(["r", "r", "r"], r, M) * drG(t, r, M, P, L))
 end
 
 @inline function drKhat(l::Real, t::Real, r::Real, M::Real, P::Real, L::Real)
     return ForwardDiff.derivative(r1 -> khat(l, t, r1, M, P, L), r)
 end
-
 
 #variable for the extrensic curvature for l=2
 @inline function KK(r::Real, M::Real, P::Real, L::Real)
@@ -117,7 +118,9 @@ end
 
 #writing down the Zerilli functions
 @inline function InitialPsiValues(t::Real, r::Real, M::Real, P::Real, L::Real, l::Real)
-    return 2 * r / (l * (l + 1)) * (khat(l, t, r, M, P, L) + 2 / (Lamb(l, r, M)) * f(r, M)^2 * fhatrr(t, r, M, P, L) - r * f(r, M) * drKhat(l, t, r, M, P, L))
+    return 2 * r / (l * (l + 1)) * (khat(l, t, r, M, P, L) +
+                                    2 / (Lamb(l, r, M)) * f(r, M)^2 * fhatrr(t, r, M, P, L) -
+                                    r * f(r, M) * drKhat(l, t, r, M, P, L))
 end
 
 @inline function drInitialPsiValues(t::Real, r::Real, M::Real, P::Real, L::Real)
@@ -131,7 +134,8 @@ end
 # Potential for the function
 # THIS IS EVALUATED at r and not rstar
 @inline function Vpot(l::Real, r::Real, M::Real)
-    return f(r, M) / (Lamb(l, r, M)^2) * (mul(l)^2 * ((mul(l) + 2) / r^2 + 6 * M / r^3) + 36 * M^2 / r^4 * (mul(l) + 2 * M / r))
+    return f(r, M) / (Lamb(l, r, M)^2) * (mul(l)^2 * ((mul(l) + 2) / r^2 + 6 * M / r^3) +
+                                          36 * M^2 / r^4 * (mul(l) + 2 * M / r))
 end
 
 @inline function poschl_teller(l::Real, r::Real)
