@@ -138,9 +138,9 @@ end
                                           36 * M^2 / r^4 * (mul(l) + 2 * M / r))
 end
 
-@inline function poschl_teller(l::Real, r::Real)
-    # return -(l * (l + 1) / 2) * sech(r)^2
-    return -sech(r)^2
+@inline function poschl_teller(l, r)
+    return -(l * (l + 1) / 2) * sech(r)^2
+    # return -sech(r)^2
 end
 
 end #end of module

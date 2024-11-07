@@ -8,10 +8,9 @@ using OrdinaryDiffEqTsit5
 
 export zerilli
 
-function zerilli(domain::Vector, ncells::Integer,
-                 tf::Real, cfl::Real, M::Real=1.0, l::Real=0;
-                 boundary_type::Symbol=:radiative,
-                 folder="", save_every=1)
+function zerilli(; domain::Vector, ncells::Integer,
+                 tf::Real, cfl::Real, M::Real=1.0, l::Real=0,
+                 boundary_type::Symbol=:radiative)
     @assert boundary_type === :radiative || boundary_type === :reflective
 
     grid = UniformGrid(domain, ncells)
@@ -24,19 +23,19 @@ function zerilli(domain::Vector, ncells::Integer,
 
     # Initial Data
 
-    # σ = 6
-    # r0 = 20# 20M / 2 + horizon
-    # Φ = InitialData.Gaussian1D.(0, coords(grid), σ, r0)
-    # Π = InitialData.dtGaussian1D.(0, coords(grid), σ, r0)
-    # Ψ = InitialData.drGaussian1D.(0, coords(grid), σ, r0)
+    σ = 6
+    r0 = 0 # 20# 20M / 2 + horizon
+    Φ = InitialData.Gaussian1D.(0.0, coords(grid), σ, r0)
+    Π = InitialData.dtGaussian1D.(0.0, coords(grid), σ, r0)
+    Ψ = InitialData.drGaussian1D.(0.0, coords(grid), σ, r0)
 
-    Φ = rand(N)
-    Π = rand(N)
-    Ψ = rand(N)
+    # Φ = rand(N)
+    # Π = rand(N)
+    # Ψ = rand(N)
 
     params = (h=spacing(grid), N=N, bc=boundary_type, t=t, ti=coords(t),
-              dt=spacing(t), save_every=save_every, M=M, grid=grid,
-              folder=folder, cfl=cfl, rcoord=coords(grid), l=l)
+              dt=spacing(t), M=M, grid=grid, L=domain[2],
+              cfl=cfl, rcoord=coords(grid), l=l)
     statevector = hcat(Φ, Π, Ψ)
 
     ode = ODEProblem{true}(ODE.rhs!, statevector, tspan, params)

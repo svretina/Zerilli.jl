@@ -7,6 +7,7 @@ using ..InitialData
     N = params.N
     l = params.l
     M = params.M
+    L = params.L
     rstar = params.rcoord
     boundary_type = params.bc
     @fastmath @inbounds begin
@@ -29,8 +30,8 @@ using ..InitialData
                 drΨ = (Ψ[end] - Ψ[N1]) / h
                 drΠ = (Π[end] - Π[N1]) / h
             else
-                drΠ = (Π[i+1] - Π[i-1]) / h2
-                drΨ = (Ψ[i+1] - Ψ[i-1]) / h2
+                drΠ = (Π[i + 1] - Π[i - 1]) / h2
+                drΨ = (Ψ[i + 1] - Ψ[i - 1]) / h2
             end
             dtΦ[i] = Π[i]
             # Apply boundary conditions
@@ -77,10 +78,10 @@ using ..InitialData
                            $boundary_type")
                 end
             else
-                # ri = InitialData.r(rstar[i], M) # transform rstar to r for potential
-                # @assert ri > 2M
-                # dtΠ[i] = drΨ + InitialData.Vpot(l, rstar[i], M) * Φ[i]
-                dtΠ[i] = drΨ + InitialData.poschl_teller(l, rstar[i]) * Φ[i]
+                ri = InitialData.r(rstar[i], M) # transform rstar to r for potential
+                # dtΠ[i] = drΨ + InitialData.poschl_teller(l, rstar[i]) * Φ[i]
+                dtΠ[i] = drΨ - cos((π / 2L) * rstar[i]) * Φ[i]
+                # dtΠ[i] = drΨ + InitialData.poschl_teller(l, ri) * Φ[i]
                 dtΨ[i] = drΠ
             end
         end
