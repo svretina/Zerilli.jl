@@ -10,6 +10,7 @@ using ..InitialData
     L = params.L
     rstar = params.rcoord
     boundary_type = params.bc
+    ε = params.dissipation_strength
     @fastmath @inbounds begin
         h2 = 2h
         N1 = N - 1
@@ -26,12 +27,18 @@ using ..InitialData
             if i == 1
                 drΨ = (Ψ[2] - Ψ[1]) / h
                 drΠ = (Π[2] - Π[1]) / h
+                d2xΠ = 0.0
+                d2xΨ = 0.0
             elseif i == N
                 drΨ = (Ψ[end] - Ψ[N1]) / h
                 drΠ = (Π[end] - Π[N1]) / h
+                d2xΠ = 0.0
+                d2xΨ = 0.0
             else
                 drΠ = (Π[i + 1] - Π[i - 1]) / h2
                 drΨ = (Ψ[i + 1] - Ψ[i - 1]) / h2
+                d2xΠ = (Π[i - 1] - 2Π[i] + Π[i + 1])
+                d2xΨ = (Ψ[i - 1] - 2Ψ[i] + Ψ[i + 1])
             end
             dtΦ[i] = Π[i]
             # Apply boundary conditions
@@ -80,9 +87,9 @@ using ..InitialData
             else
                 ri = InitialData.r(rstar[i], M) # transform rstar to r for potential
                 # dtΠ[i] = drΨ + InitialData.poschl_teller(l, rstar[i]) * Φ[i]
-                dtΠ[i] = drΨ - cos((π / 2L) * rstar[i]) * Φ[i]
-                # dtΠ[i] = drΨ + InitialData.poschl_teller(l, ri) * Φ[i]
-                dtΨ[i] = drΠ
+                # dtΠ[i] = drΨ - cos((π / 2L) * rstar[i]) * Φ[i]
+                dtΠ[i] = dxΨ + InitialData.poschl_teller(l, ri) * Φ[i] + ε4h * d2xΠ
+                dtΨ[i] = dxΠ + ε4h * d2xΨ
             end
         end
     end

@@ -143,4 +143,8 @@ end
     # return -sech(r)^2
 end
 
+@inline function cosine(x, L)
+    return -cos((π / 2L) * x)^2
+end
+
 end #end of module
